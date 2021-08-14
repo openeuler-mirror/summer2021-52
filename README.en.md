@@ -3,20 +3,18 @@
 #### Description
 https://gitee.com/openeuler-competition/summer-2021/issues/I3EIE3
 
-#### Software Architecture
-Software architecture description
 
 #### Installation
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### Instructions
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  cd ./ubuntu-openEuler
+2.  sudo ./create-image.sh
+3.  cd ../
+4.  git submodule update --init --recursive
+5.  cd ./kernel
+6.  git checkout openEuler-21.03
+7.  make ARCH=x86_64 menuconfig
+8.  make ARCH=x86_64 bzImage -j2
+9.  ./runqemu-openEuler-ubuntu.sh
 
 #### Contribution
 
@@ -25,6 +23,12 @@ Software architecture description
 3.  Commit your code
 4.  Create Pull Request
 
+#### 备注
+
+1.  this repository build a simple environment for running (openEuler kernel)+(ubuntu file system)
+2.  if you want to change the ubuntu distrubutation, change line 25 in create-image.sh
+3.  the kernel of  openEuler in this repository is official branch 21.03 with  memcg patch, and the compile process is doing well 
+4.  future plan is running "readtwice" test, which needs the docker environment
 
 #### Gitee Feature
 
