@@ -1,0 +1,70 @@
+diff --git a/case-lru-file-readtwice b/case-lru-file-readtwice
+index 85533b248634..57cb97d121ae 100755
+--- a/case-lru-file-readtwice
++++ b/case-lru-file-readtwice
+@@ -15,23 +15,30 @@
+ 
+ . ./hw_vars
+ 
+-for i in `seq 1 $nr_task`
+-do
+-	create_sparse_file $SPARSE_FILE-$i $((ROTATE_BYTES / nr_task))
+-	timeout --foreground -s INT ${runtime:-600} dd bs=4k if=$SPARSE_FILE-$i of=/dev/null > $TMPFS_MNT/dd-output-1-$i 2>&1 &
+-	timeout --foreground -s INT ${runtime:-600} dd bs=4k if=$SPARSE_FILE-$i of=/dev/null > $TMPFS_MNT/dd-output-2-$i 2>&1 &
+-done
++OUT_DIR=$(hostname)-${nr_task}c-$(((mem + (1<<29))>>30))g
++TEST_CASES=${@:-$(echo case-*)}
++
++echo $((1<<30)) > /proc/sys/vm/max_map_count
++echo $((1<<20)) > /proc/sys/kernel/threads-max
++echo 1 > /proc/sys/vm/overcommit_memory
++#echo 3 > /proc/sys/vm/drop_caches
++
++
++i=1
++
++if [ "$1" == "m" ];then
++	mount_tmpfs
++	create_sparse_root
++	create_sparse_file $SPARSE_FILE-$i $((ROTATE_BYTES))
++	exit
++fi
++
++
++if [ "$1" == "r" ];then
++	(timeout --foreground -s INT ${runtime:-300} dd bs=4k if=$SPARSE_FILE-$i of=/dev/null > $TMPFS_MNT/dd-output-1-$i 2>&1)&
++	(timeout --foreground -s INT ${runtime:-300} dd bs=4k if=$SPARSE_FILE-$i of=/dev/null > $TMPFS_MNT/dd-output-2-$i 2>&1)&
++fi
+ 
+ wait
+ sleep 1
+ 
+-for file in $TMPFS_MNT/dd-output-*
+-do
+-	[ -s "$file" ] || {
+-		echo "dd output file empty: $file" >&2
+-	}
+-	cat $file
+-	rm  $file
+-done
+-
+-rm `seq -f $SPARSE_FILE-%g 1 $nr_task`
+diff --git a/hw_vars b/hw_vars
+index 8731cefb9f57..ceeaa9f17c0b 100755
+--- a/hw_vars
++++ b/hw_vars
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/sh -e
+ 
+ if [ -n "$runtime" ]; then
+ 	USEMEM="$CMD ./usemem --runtime $runtime"
+@@ -43,7 +43,7 @@ create_loop_devices()
+ 	modprobe loop 2>/dev/null
+ 	[ -e "/dev/loop0" ] || modprobe loop 2>/dev/null
+ 
+-	for i in $(seq 0 8)
++	for i in $(seq 0 104)
+ 	do
+ 		[ -e "/dev/loop$i" ] && continue
+ 		mknod /dev/loop$i b 7 $i
