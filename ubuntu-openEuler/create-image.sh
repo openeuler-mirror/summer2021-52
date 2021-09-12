@@ -20,9 +20,9 @@ fi
 
 # Variables affected by options
 ARCH=$(uname -m)
-#RELEASE=xenial 
+RELEASE=xenial 
 #16.04LTS
-RELEASE=bionic 
+#RELEASE=bionic 
 #18.04LTS
 #RELEASE=stretch 
 #debian9.0
